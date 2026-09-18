@@ -1,0 +1,172 @@
+{
+  "name": "Lead Marketing - Captura y seguimiento automático",
+  "nodes": [
+    {
+      "id": "webhook-1",
+      "name": "Webhook - Landing Page",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-nuevo",
+        "responseMode": "onReceived",
+        "options": {}
+      }
+    },
+    {
+      "id": "set-1",
+      "name": "Code - Validar y limpiar datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const lead = $json;\nconst email = (lead.email || '').trim().toLowerCase();\nconst nombre = (lead.nombre || '').trim();\nconst telefono = (lead.telefono || '').trim();\nconst fuente = (lead.fuente || 'web');\nconst score = Number(lead.score || 0);\nreturn [{ json: { nombre, email, telefono, fuente, score, valid: !!(nombre && email && score >= 0) } }];"
+      }
+    },
+    {
+      "id": "if-1",
+      "name": "IF - Lead calificado",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.score }}",
+              "operation": "largerEqual",
+              "value2": 70
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "sheet-1",
+      "name": "Google Sheets - Crear contacto",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        440,
+        -180
+      ],
+      "parameters": {
+        "sheetId": "CRM_Leads",
+        "operation": "appendOrUpdate",
+        "documentId": "crm-leads"
+      }
+    },
+    {
+      "id": "slack-1",
+      "name": "Slack - Notificar vendedor",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -180
+      ],
+      "parameters": {
+        "channel": "#ventas",
+        "text": "Nuevo lead calificado: {{ $json.nombre }}"
+      }
+    },
+    {
+      "id": "gmail-1",
+      "name": "Gmail - Bienvenida + oferta",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        440,
+        180
+      ],
+      "parameters": {
+        "subject": "Bienvenido/a a nuestra comunidad",
+        "message": "Hola {{ $json.nombre }}, gracias por contactarnos."
+      }
+    },
+    {
+      "id": "email-1",
+      "name": "Gmail - Nutrición por correo",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        660,
+        180
+      ],
+      "parameters": {
+        "subject": "Recibe información sobre nuestros servicios",
+        "message": "Hola {{ $json.nombre }}, te dejamos más detalle."
+      }
+    }
+  ],
+  "connections": {
+    "webhook-1": {
+      "main": [
+        [
+          {
+            "node": "set-1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set-1": {
+      "main": [
+        [
+          {
+            "node": "if-1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if-1": {
+      "main": [
+        [
+          {
+            "node": "sheet-1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "slack-1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "gmail-1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "email-1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "instanceId": "quiz4-n8n-flowlab"
+  },
+  "pinData": {}
+}
