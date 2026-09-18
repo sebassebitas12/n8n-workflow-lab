@@ -1,16 +1,23 @@
-# React + Vite
+# FlowLab
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Proyecto académico basado en el **Quiz #4 — Diseño de un Flujo de Automatización en n8n para una Solución de Negocio**.
 
-Currently, two official plugins are available:
+## Propuesta actual
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Se trabajará sobre **Atención al Cliente / Soporte: clasificación y enrutamiento automático de solicitudes**. La solución se adapta a un contexto de pequeñas empresas costarricenses que reciben consultas e incidencias por canales digitales.
 
-## React Compiler
+## Arquitectura prevista
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**React → API → Webhook n8n → procesamiento y clasificación → condicionales → acción de salida → respuesta**
 
-## Expanding the ESLint configuration
+React, la API y la persistencia se incorporarán como capas de práctica para construir una solución completa; el entregable académico central sigue siendo el workflow funcional de n8n.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Documentación
+
+- [Requerimientos](docs/REQUERIMIENTOS.md)
+
+## Estado
+
+**Fase 0 — Descubrimiento y documentación**
+
+Todavía no se ha iniciado la implementación. Primero se definirá el dominio, contrato de datos, arquitectura, workflow e identidad visual.
