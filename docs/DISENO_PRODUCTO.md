@@ -30,6 +30,8 @@ Referencia conceptual: dashboards modernos de helpdesk/SaaS con bandeja de ticke
 
 ## Experiencia principal
 
+FlowLab no se presenta como una herramienta de IA ni como un visor de n8n. Es una mesa de trabajo para equipos de soporte: concentra mensajes, hace explícita la decisión de clasificación y muestra cuál es la siguiente acción humana. La automatización es la infraestructura que reduce el trabajo repetitivo; el producto es la cola priorizada que ayuda a resolver casos.
+
 ### Dashboard
 
 Debe responder rápidamente:
@@ -76,6 +78,8 @@ No será una pantalla decorativa. Mostrará el estado real del procesamiento:
 **Received → Validated → Classified → Prioritized → Routed → Completed**
 
 Esto permitirá demostrar visualmente el trabajo de n8n.
+
+La interfaz debe responder siempre a tres preguntas: qué entró, qué regla se aplicó y quién debe actuar ahora. Las métricas solo se muestran si ayudan a decidir sobre la cola; no se presentan números decorativos ni estados de automatización sin una fuente identificable.
 
 ## Modelo inicial
 
@@ -153,3 +157,9 @@ La aplicación no dependerá directamente de n8n para toda su persistencia. La a
 - Integraciones de producción no necesarias para demostrar el flujo.
 
 Estas funciones pueden investigarse posteriormente, pero no se incorporarán únicamente para aumentar el tamaño del proyecto.
+
+## Estado visual actual
+
+La primera implementación usa la dirección dark-first definida para FlowLab: carbón como fondo, superficies elevadas, verde/teal para acciones y colores semánticos para prioridad y estado. La pantalla inicial implementada es el dashboard operativo con inbox y detalle, no una landing académica ni una pantalla de presentación del workflow.
+
+La interfaz actual usa datos locales para demostrar la experiencia. No se debe interpretar el timeline ni las métricas como datos reales hasta que exista la API y la integración con n8n documentadas en [ESTADO_IMPLEMENTACION.md](ESTADO_IMPLEMENTACION.md).

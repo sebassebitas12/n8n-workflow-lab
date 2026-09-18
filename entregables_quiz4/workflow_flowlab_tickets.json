@@ -1,0 +1,221 @@
+{
+  "name": "FlowLab - Clasificacion y enrutamiento de tickets",
+  "nodes": [
+    {
+      "id": "webhook-ticket",
+      "name": "Webhook - Nueva solicitud",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "flowlab/tickets",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "normalize-ticket",
+      "name": "Code - Validar y clasificar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const input = $json.body ?? $json;\nconst customerName = String(input.customerName ?? '').trim();\nconst customerEmail = String(input.customerEmail ?? '').trim().toLowerCase();\nconst channel = String(input.channel ?? 'Web').trim();\nconst message = String(input.message ?? '').trim();\nconst valid = Boolean(customerName && customerEmail && message && customerEmail.includes('@'));\nconst lowerMessage = message.toLowerCase();\nconst category = lowerMessage.includes('pedido') || lowerMessage.includes('entrega') ? 'Pedido' : lowerMessage.includes('precio') || lowerMessage.includes('costo') ? 'Ventas' : lowerMessage.includes('error') || lowerMessage.includes('no funciona') ? 'Soporte' : lowerMessage.includes('reclamo') || lowerMessage.includes('incompleto') ? 'Reclamo' : 'Información';\nconst priority = lowerMessage.includes('urgente') || lowerMessage.includes('no puedo') || lowerMessage.includes('incompleto') ? 'Alta' : 'Normal';\nreturn [{ json: { customerName, customerEmail, channel, message, category, priority, valid, status: valid ? 'Procesando' : 'Rechazado', automationStatus: 'Classified' } }];"
+      }
+    },
+    {
+      "id": "valid-ticket",
+      "name": "IF - Solicitud válida",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.valid }}",
+              "operation": "true"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "priority-ticket",
+      "name": "IF - Prioridad alta",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        120,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.priority }}",
+              "operation": "equals",
+              "value2": "Alta"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "urgent-ticket",
+      "name": "Code - Enrutar prioridad alta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        140,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { ...$json, assignedTeam: $json.category === 'Ventas' ? 'Ventas' : 'Servicio al cliente', assignedAgent: 'Guardia de prioridad', priority: 'Alta', status: 'Asignado', automationStatus: 'Routed' } }];"
+      }
+    },
+    {
+      "id": "normal-ticket",
+      "name": "Code - Enrutar prioridad normal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        140,
+        160
+      ],
+      "parameters": {
+        "jsCode": "return [{ json: { ...$json, assignedTeam: $json.category === 'Ventas' ? 'Ventas' : 'Servicio al cliente', assignedAgent: 'Cola general', status: 'Asignado', automationStatus: 'Routed' } }];"
+      }
+    },
+    {
+      "id": "respond-valid",
+      "name": "Respond - Ticket procesado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        420,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "respond-invalid",
+      "name": "Respond - Datos inválidos",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        140,
+        420
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 400,
+        "responseBody": "={{ { valid: false, status: \"Rechazado\", message: \"customerName, customerEmail y message son obligatorios\" } }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook - Nueva solicitud": {
+      "main": [
+        [
+          {
+            "node": "Code - Validar y clasificar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Validar y clasificar": {
+      "main": [
+        [
+          {
+            "node": "IF - Solicitud válida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Solicitud válida": {
+      "main": [
+        [
+          {
+            "node": "IF - Prioridad alta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - Datos inválidos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Prioridad alta": {
+      "main": [
+        [
+          {
+            "node": "Code - Enrutar prioridad alta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code - Enrutar prioridad normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Enrutar prioridad alta": {
+      "main": [
+        [
+          {
+            "node": "Respond - Ticket procesado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Enrutar prioridad normal": {
+      "main": [
+        [
+          {
+            "node": "Respond - Ticket procesado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

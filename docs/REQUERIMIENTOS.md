@@ -94,3 +94,7 @@ La identidad visual y el diseño de la interfaz se definirán desde el inicio, p
 - Diseñar el workflow definitivo.
 - Definir estrategia de pruebas.
 - Crear identidad visual y mockups.
+
+## 14. Estado verificado
+
+La interfaz cuenta actualmente con un prototipo local de dashboard, bandeja, detalle, creación de solicitudes y avance de estados. Estas funciones trabajan con datos en memoria y no representan todavía una integración con API o n8n. El estado detallado y las capacidades que no existen se mantienen en [ESTADO_IMPLEMENTACION.md](ESTADO_IMPLEMENTACION.md).
